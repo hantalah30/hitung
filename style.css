@@ -1,0 +1,16 @@
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#total-section .card {
+  transition: transform 0.2s ease-in-out;
+}
+
+#total-section .card:hover {
+  transform: translateY(-5px);
+}
+
+.badge {
+  min-width: 60px;
+  text-align: center;
+}
