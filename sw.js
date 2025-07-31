@@ -2,6 +2,7 @@ const CACHE_NAME = "penghitung-cache-v1";
 // Tambahkan ./ di depan setiap file lokal
 const urlsToCache = [
   "./",
+  "./hitung",
   "./index.html",
   "./hitung.html",
   "./script-index.js",
