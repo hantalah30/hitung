@@ -2,7 +2,7 @@
   "name": "Aplikasi Penghitung",
   "short_name": "Penghitung",
   "description": "Aplikasi untuk menghitung data reguler dan klik.",
-  "start_url": "/index.html",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#212529",

@@ -1,12 +1,15 @@
 const CACHE_NAME = "penghitung-cache-v1";
-// Daftar file yang akan di-cache untuk penggunaan offline
+// Tambahkan ./ di depan setiap file lokal
 const urlsToCache = [
-  "/",
-  "/index.html",
-  "/hitung.html",
-  "/script-index.js",
-  "/script-hitung.js",
-  "/firebase-config.js",
+  "./",
+  "./index.html",
+  "./hitung.html",
+  "./script-index.js",
+  "./script-hitung.js",
+  "./firebase-config.js",
+  "./manifest.json", // Tambahkan manifest ke cache
+  "./icon-192x192.png", // Tambahkan ikon ke cache
+  "./icon-512x512.png", // Tambahkan ikon ke cache
   "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css",
   "https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js",
   "https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js",
@@ -26,11 +29,9 @@ self.addEventListener("install", (event) => {
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
-      // Jika file ada di cache, kembalikan dari cache
       if (response) {
         return response;
       }
-      // Jika tidak, ambil dari network
       return fetch(event.request);
     })
   );

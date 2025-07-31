@@ -1,7 +1,12 @@
 import { firebaseConfig } from "./firebase-config.js";
 
 // Inisialisasi Firebase
-firebase.initializeApp(firebaseConfig);
+try {
+  firebase.initializeApp(firebaseConfig);
+} catch (error) {
+  console.error("Gagal menginisialisasi Firebase:", error);
+  tampilkanNotifikasi("Gagal menghubungkan ke database.", true);
+}
 const database = firebase.database();
 
 // Dapatkan tanggal dari URL
@@ -26,6 +31,8 @@ const btnTambahReguler = document.getElementById("btn-tambah-reguler");
 const btnTambahKlik = document.getElementById("btn-tambah-klik");
 const daftarEntriEl = document.getElementById("daftar-entri");
 const pesanKosongEl = document.getElementById("pesan-kosong");
+const jumlahErrorEl = document.getElementById("jumlah-error");
+const notificationEl = document.getElementById("notification");
 
 // Format tanggal untuk ditampilkan
 const tglObj = new Date(tanggal + "T00:00:00");
@@ -35,6 +42,15 @@ tanggalSekarangEl.textContent = tglObj.toLocaleDateString("id-ID", {
   month: "long",
   day: "numeric",
 });
+
+// Fungsi untuk menampilkan notifikasi
+function tampilkanNotifikasi(pesan, isError = false) {
+  notificationEl.textContent = pesan;
+  notificationEl.className = `notification show ${isError ? "error" : ""}`;
+  setTimeout(() => {
+    notificationEl.classList.remove("show");
+  }, 3000);
+}
 
 // Fungsi untuk merender UI berdasarkan data dari Firebase
 function renderUI(data) {
@@ -46,29 +62,29 @@ function renderUI(data) {
   if (data) {
     Object.entries(data).forEach(([key, entri]) => {
       if (entri.tipe === "reguler") {
-        totalReguler += entri.jumlah;
+        totalReguler += parseFloat(entri.jumlah);
       } else if (entri.tipe === "klik") {
-        totalKlik += entri.jumlah;
+        totalKlik += parseFloat(entri.jumlah);
       }
 
       const li = document.createElement("li");
       li.className =
         "list-group-item d-flex justify-content-between align-items-center";
       li.innerHTML = `
-                <span>
-                    <span class="badge bg-${
-                      entri.tipe === "reguler" ? "primary" : "success"
-                    } me-2">${entri.tipe.toUpperCase()}</span>
-                    ${entri.jumlah.toLocaleString("id-ID", {
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 4,
-                    })}
-                </span>
-                <div>
-                    <button class="btn btn-warning btn-sm btn-edit" data-key="${key}">Edit</button>
-                    <button class="btn btn-danger btn-sm btn-hapus" data-key="${key}">Hapus</button>
-                </div>
-            `;
+ <span>
+ <span class="badge bg-${
+   entri.tipe === "reguler" ? "primary" : "success"
+ } me-2">${entri.tipe.toUpperCase()}</span>
+ ${parseFloat(entri.jumlah).toLocaleString("id-ID", {
+   minimumFractionDigits: 0,
+   maximumFractionDigits: 4,
+ })}
+ </span>
+ <div>
+ <button class="btn btn-warning btn-sm btn-edit" data-key="${key}">Edit</button>
+ <button class="btn btn-danger btn-sm btn-hapus" data-key="${key}">Hapus</button>
+ </div>
+ `;
       daftarEntriEl.appendChild(li);
     });
   }
@@ -78,7 +94,6 @@ function renderUI(data) {
     daftarEntriEl.appendChild(pesanKosongEl);
   }
 
-  // Update total (gunakan .toFixed untuk mengatasi masalah floating point)
   totalRegulerEl.textContent = parseFloat(
     totalReguler.toFixed(4)
   ).toLocaleString("id-ID");
@@ -93,22 +108,30 @@ function renderUI(data) {
 
 // Fungsi untuk menambah entri baru
 function tambahEntri(tipe) {
-  const jumlahStr = inputJumlahEl.value.replace(",", "."); // Ganti koma dengan titik
+  const jumlahStr = inputJumlahEl.value.trim().replace(",", ".");
   const jumlah = parseFloat(jumlahStr);
 
   if (isNaN(jumlah) || jumlah <= 0) {
-    alert("Masukkan jumlah yang valid.");
+    jumlahErrorEl.textContent =
+      "Masukkan jumlah yang valid (angka lebih besar dari 0).";
     return;
   }
+  jumlahErrorEl.textContent = ""; // Bersihkan pesan error
 
-  // `push` akan membuat ID unik secara otomatis
-  dataRef.push({
-    tipe: tipe,
-    jumlah: jumlah,
-  });
-
-  inputJumlahEl.value = "";
-  inputJumlahEl.focus();
+  dataRef
+    .push({
+      tipe: tipe,
+      jumlah: jumlah.toFixed(4), // Simpan dengan 4 desimal
+    })
+    .then(() => {
+      tampilkanNotifikasi(`Berhasil menambahkan ${tipe}.`);
+      inputJumlahEl.value = "";
+      inputJumlahEl.focus();
+    })
+    .catch((error) => {
+      console.error("Gagal menambahkan data:", error);
+      tampilkanNotifikasi(`Gagal menambahkan ${tipe}.`, true);
+    });
 }
 
 // Fungsi untuk mengedit entri
@@ -123,20 +146,38 @@ function editEntri(key) {
     );
     if (jumlahBaruStr === null) return; // Batal
 
-    const jumlahBaru = parseFloat(jumlahBaruStr.replace(",", "."));
+    const jumlahBaru = parseFloat(jumlahBaruStr.trim().replace(",", "."));
     if (isNaN(jumlahBaru) || jumlahBaru <= 0) {
-      alert("Masukkan jumlah yang valid.");
+      alert("Masukkan jumlah yang valid (angka lebih besar dari 0).");
       return;
     }
 
-    dataRef.child(key).update({ jumlah: jumlahBaru });
+    dataRef
+      .child(key)
+      .update({ jumlah: jumlahBaru.toFixed(4) })
+      .then(() => {
+        tampilkanNotifikasi(`Berhasil mengedit ${entri.tipe}.`);
+      })
+      .catch((error) => {
+        console.error("Gagal mengedit data:", error);
+        tampilkanNotifikasi(`Gagal mengedit ${entri.tipe}.`, true);
+      });
   });
 }
 
 // Fungsi untuk menghapus entri
 function hapusEntri(key) {
   if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
-    dataRef.child(key).remove();
+    dataRef
+      .child(key)
+      .remove()
+      .then(() => {
+        tampilkanNotifikasi("Data berhasil dihapus.");
+      })
+      .catch((error) => {
+        console.error("Gagal menghapus data:", error);
+        tampilkanNotifikasi("Gagal menghapus data.", true);
+      });
   }
 }
 
@@ -156,6 +197,13 @@ daftarEntriEl.addEventListener("click", (e) => {
 });
 
 // Listener utama: panggil renderUI setiap kali data di Firebase berubah
-dataRef.on("value", (snapshot) => {
-  renderUI(snapshot.val());
-});
+dataRef.on(
+  "value",
+  (snapshot) => {
+    renderUI(snapshot.val());
+  },
+  (error) => {
+    console.error("Gagal membaca data dari Firebase:", error);
+    tampilkanNotifikasi("Gagal memuat data.", true);
+  }
+);
