@@ -107,35 +107,32 @@ function renderUI(data) {
     }
     totalKeseluruhan += jumlah;
 
-    const li = document.createElement("li");
-    li.className =
-      "list-group-item d-flex justify-content-between align-items-center";
+    const tr = document.createElement("tr");
     const categoryInfo = CATEGORY_MAP[entri.tipe];
-    li.innerHTML = `
-      <span>
-        <span class="badge bg-${categoryInfo.color} me-2">${
+    tr.innerHTML = `
+      <td><span class="badge bg-${categoryInfo.color}">${
       categoryInfo.name
-    }</span>
-        ${jumlah.toLocaleString("id-ID", {
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 4,
-        })}
-      </span>
-      <div>
+    }</span></td>
+      <td>${jumlah.toLocaleString("id-ID", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 4,
+      })}</td>
+      <td>
         <button class="btn btn-warning btn-sm btn-edit" data-key="${
           entri.key
         }">Edit</button>
         <button class="btn btn-danger btn-sm btn-hapus" data-key="${
           entri.key
         }">Hapus</button>
-      </div>
+      </td>
     `;
-    daftarEntriEl.appendChild(li);
+    daftarEntriEl.appendChild(tr);
   });
 
   if (daftarEntriEl.children.length === 0) {
-    pesanKosongEl.textContent = "Belum ada data untuk tanggal ini.";
-    daftarEntriEl.appendChild(pesanKosongEl);
+    pesanKosongEl.style.display = "table-row";
+  } else {
+    pesanKosongEl.style.display = "none";
   }
 
   // Update tampilan total
