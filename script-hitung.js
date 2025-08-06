@@ -23,8 +23,6 @@ const dataRef = database.ref(`data/${tanggal}`);
 
 // Kategori baru dan urutannya
 const CATEGORIES = [
-  "reguler",
-  "klik",
   "reguler-tawar",
   "mild-tawar",
   "reguler-click",
@@ -33,8 +31,6 @@ const CATEGORIES = [
   "bolong-buntu",
 ];
 const CATEGORY_MAP = {
-  reguler: { name: "REGULER", color: "primary" },
-  klik: { name: "CLICK", color: "success" },
   "reguler-tawar": { name: "REGULER TAWAR", color: "primary" },
   "mild-tawar": { name: "MILD TAWAR", color: "primary" },
   "reguler-click": { name: "REGULER CLICK", color: "success" },
@@ -280,12 +276,6 @@ function exportDataAsCsv() {
 }
 
 // Event Listeners
-document
-  .getElementById("btn-tambah-reguler")
-  .addEventListener("click", () => tambahEntri("reguler"));
-document
-  .getElementById("btn-tambah-klik")
-  .addEventListener("click", () => tambahEntri("klik"));
 document
   .getElementById("btn-tambah-reguler-tawar")
   .addEventListener("click", () => tambahEntri("reguler-tawar"));
