@@ -42,27 +42,64 @@
           <h1>📊 Penghitung</h1>
           <h5 id="tanggal-sekarang">Memuat tanggal...</h5>
         </div>
-        <a href="index.html" class="btn btn-light">Kembali</a>
+        <div>
+          <a href="index.html" class="btn btn-light">Kembali</a>
+          <button id="btn-download" class="btn btn-warning">
+            Download Excel
+          </button>
+        </div>
       </header>
 
       <section id="total-section" class="row text-center g-3 mb-4">
-        <div class="col-md-4">
+        <div class="col-6 col-md-4 col-lg-3">
           <div class="card bg-primary text-white shadow-sm">
             <div class="card-body">
-              <h5 class="card-title">REGULER</h5>
-              <p class="card-text fs-2 fw-bold" id="total-reguler">0</p>
+              <h5 class="card-title">REGULER TAWAR</h5>
+              <p class="card-text fs-2 fw-bold" id="total-reguler-tawar">0</p>
             </div>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="card bg-primary text-white shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">MILD TAWAR</h5>
+              <p class="card-text fs-2 fw-bold" id="total-mild-tawar">0</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
           <div class="card bg-success text-white shadow-sm">
             <div class="card-body">
-              <h5 class="card-title">KLIK</h5>
-              <p class="card-text fs-2 fw-bold" id="total-klik">0</p>
+              <h5 class="card-title">REGULER CLICK</h5>
+              <p class="card-text fs-2 fw-bold" id="total-reguler-click">0</p>
             </div>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="card bg-success text-white shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">MILD CLICK</h5>
+              <p class="card-text fs-2 fw-bold" id="total-mild-click">0</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="card bg-success text-white shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">ESSE CLICK</h5>
+              <p class="card-text fs-2 fw-bold" id="total-esse-click">0</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="card bg-danger text-white shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">BOLONG BUNTU</h5>
+              <p class="card-text fs-2 fw-bold" id="total-bolong-buntu">0</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-4 col-lg-6 mx-auto">
           <div class="card bg-secondary text-white shadow-sm">
             <div class="card-body">
               <h5 class="card-title">JUMLAH TOTAL</h5>
@@ -87,21 +124,61 @@
             <div id="jumlah-error" class="form-text text-danger"></div>
           </div>
 
-          <div class="d-grid gap-2 d-md-flex">
-            <button
-              type="button"
-              id="btn-tambah-reguler"
-              class="btn btn-primary btn-lg flex-grow-1"
-            >
-              Tambah Reguler
-            </button>
-            <button
-              type="button"
-              id="btn-tambah-klik"
-              class="btn btn-success btn-lg flex-grow-1"
-            >
-              Tambah Klik
-            </button>
+          <div class="row g-2 d-flex">
+            <div class="col-6 col-md-4 col-lg-2 d-grid">
+              <button
+                type="button"
+                id="btn-tambah-reguler-tawar"
+                class="btn btn-primary btn-sm"
+              >
+                Reguler Tawar
+              </button>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2 d-grid">
+              <button
+                type="button"
+                id="btn-tambah-mild-tawar"
+                class="btn btn-primary btn-sm"
+              >
+                Mild Tawar
+              </button>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2 d-grid">
+              <button
+                type="button"
+                id="btn-tambah-reguler-click"
+                class="btn btn-success btn-sm"
+              >
+                Reguler Click
+              </button>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2 d-grid">
+              <button
+                type="button"
+                id="btn-tambah-mild-click"
+                class="btn btn-success btn-sm"
+              >
+                Mild Click
+              </button>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2 d-grid">
+              <button
+                type="button"
+                id="btn-tambah-esse-click"
+                class="btn btn-success btn-sm"
+              >
+                Esse Click
+              </button>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2 d-grid">
+              <button
+                type="button"
+                id="btn-tambah-bolong-buntu"
+                class="btn btn-danger btn-sm"
+              >
+                Bolong Buntu
+              </button>
+            </div>
           </div>
         </div>
       </section>

@@ -21,18 +21,39 @@ if (!tanggal) {
 // Referensi database untuk tanggal spesifik ini
 const dataRef = database.ref(`data/${tanggal}`);
 
+// Kategori baru dan urutannya
+const CATEGORIES = [
+  "reguler-tawar",
+  "mild-tawar",
+  "reguler-click",
+  "mild-click",
+  "esse-click",
+  "bolong-buntu",
+];
+const CATEGORY_MAP = {
+  "reguler-tawar": { name: "REGULER TAWAR", color: "primary" },
+  "mild-tawar": { name: "MILD TAWAR", color: "primary" },
+  "reguler-click": { name: "REGULER CLICK", color: "success" },
+  "mild-click": { name: "MILD CLICK", color: "success" },
+  "esse-click": { name: "ESSE CLICK", color: "success" },
+  "bolong-buntu": { name: "BOLONG BUNTU", color: "danger" },
+};
+
 // Elemen DOM
 const tanggalSekarangEl = document.getElementById("tanggal-sekarang");
-const totalRegulerEl = document.getElementById("total-reguler");
-const totalKlikEl = document.getElementById("total-klik");
 const jumlahTotalEl = document.getElementById("jumlah-total");
 const inputJumlahEl = document.getElementById("input-jumlah");
-const btnTambahReguler = document.getElementById("btn-tambah-reguler");
-const btnTambahKlik = document.getElementById("btn-tambah-klik");
 const daftarEntriEl = document.getElementById("daftar-entri");
 const pesanKosongEl = document.getElementById("pesan-kosong");
 const jumlahErrorEl = document.getElementById("jumlah-error");
 const notificationEl = document.getElementById("notification");
+const btnDownload = document.getElementById("btn-download");
+
+// Elemen total untuk setiap kategori
+const totalElements = {};
+CATEGORIES.forEach((cat) => {
+  totalElements[cat] = document.getElementById(`total-${cat}`);
+});
 
 // Format tanggal untuk ditampilkan
 const tglObj = new Date(tanggal + "T00:00:00");
@@ -56,54 +77,74 @@ function tampilkanNotifikasi(pesan, isError = false) {
 function renderUI(data) {
   daftarEntriEl.innerHTML = ""; // Kosongkan daftar
 
-  let totalReguler = 0;
-  let totalKlik = 0;
+  const totals = {};
+  CATEGORIES.forEach((cat) => (totals[cat] = 0));
+  let totalKeseluruhan = 0;
 
+  let entries = [];
   if (data) {
-    Object.entries(data).forEach(([key, entri]) => {
-      if (entri.tipe === "reguler") {
-        totalReguler += parseFloat(entri.jumlah);
-      } else if (entri.tipe === "klik") {
-        totalKlik += parseFloat(entri.jumlah);
-      }
-
-      const li = document.createElement("li");
-      li.className =
-        "list-group-item d-flex justify-content-between align-items-center";
-      li.innerHTML = `
- <span>
- <span class="badge bg-${
-   entri.tipe === "reguler" ? "primary" : "success"
- } me-2">${entri.tipe.toUpperCase()}</span>
- ${parseFloat(entri.jumlah).toLocaleString("id-ID", {
-   minimumFractionDigits: 0,
-   maximumFractionDigits: 4,
- })}
- </span>
- <div>
- <button class="btn btn-warning btn-sm btn-edit" data-key="${key}">Edit</button>
- <button class="btn btn-danger btn-sm btn-hapus" data-key="${key}">Hapus</button>
- </div>
- `;
-      daftarEntriEl.appendChild(li);
-    });
+    entries = Object.entries(data).map(([key, entri]) => ({ key, ...entri }));
   }
+
+  // Sorting: berdasarkan urutan kategori, lalu berdasarkan jumlah
+  entries.sort((a, b) => {
+    const categoryAIndex = CATEGORIES.indexOf(a.tipe);
+    const categoryBIndex = CATEGORIES.indexOf(b.tipe);
+    if (categoryAIndex !== categoryBIndex) {
+      return categoryAIndex - categoryBIndex;
+    }
+    return parseFloat(a.jumlah) - parseFloat(b.jumlah);
+  });
+
+  entries.forEach((entri) => {
+    const jumlah = parseFloat(entri.jumlah);
+    if (totals.hasOwnProperty(entri.tipe)) {
+      totals[entri.tipe] += jumlah;
+    }
+    totalKeseluruhan += jumlah;
+
+    const li = document.createElement("li");
+    li.className =
+      "list-group-item d-flex justify-content-between align-items-center";
+    const categoryInfo = CATEGORY_MAP[entri.tipe];
+    li.innerHTML = `
+      <span>
+        <span class="badge bg-${categoryInfo.color} me-2">${
+      categoryInfo.name
+    }</span>
+        ${jumlah.toLocaleString("id-ID", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 4,
+        })}
+      </span>
+      <div>
+        <button class="btn btn-warning btn-sm btn-edit" data-key="${
+          entri.key
+        }">Edit</button>
+        <button class="btn btn-danger btn-sm btn-hapus" data-key="${
+          entri.key
+        }">Hapus</button>
+      </div>
+    `;
+    daftarEntriEl.appendChild(li);
+  });
 
   if (daftarEntriEl.children.length === 0) {
     pesanKosongEl.textContent = "Belum ada data untuk tanggal ini.";
     daftarEntriEl.appendChild(pesanKosongEl);
   }
 
-  totalRegulerEl.textContent = parseFloat(
-    totalReguler.toFixed(4)
+  // Update tampilan total
+  CATEGORIES.forEach((cat) => {
+    if (totalElements[cat]) {
+      totalElements[cat].textContent = parseFloat(
+        totals[cat].toFixed(4)
+      ).toLocaleString("id-ID");
+    }
+  });
+  jumlahTotalEl.textContent = parseFloat(
+    totalKeseluruhan.toFixed(4)
   ).toLocaleString("id-ID");
-  totalKlikEl.textContent = parseFloat(totalKlik.toFixed(4)).toLocaleString(
-    "id-ID"
-  );
-  const jumlahTotal = totalReguler + totalKlik;
-  jumlahTotalEl.textContent = parseFloat(jumlahTotal.toFixed(4)).toLocaleString(
-    "id-ID"
-  );
 }
 
 // Fungsi untuk menambah entri baru
@@ -124,13 +165,16 @@ function tambahEntri(tipe) {
       jumlah: jumlah.toFixed(4), // Simpan dengan 4 desimal
     })
     .then(() => {
-      tampilkanNotifikasi(`Berhasil menambahkan ${tipe}.`);
+      tampilkanNotifikasi(`Berhasil menambahkan ${CATEGORY_MAP[tipe].name}.`);
       inputJumlahEl.value = "";
       inputJumlahEl.focus();
     })
     .catch((error) => {
       console.error("Gagal menambahkan data:", error);
-      tampilkanNotifikasi(`Gagal menambahkan ${tipe}.`, true);
+      tampilkanNotifikasi(
+        `Gagal menambahkan ${CATEGORY_MAP[tipe].name}.`,
+        true
+      );
     });
 }
 
@@ -141,7 +185,7 @@ function editEntri(key) {
     if (!entri) return;
 
     const jumlahBaruStr = prompt(
-      `Edit jumlah untuk ${entri.tipe.toUpperCase()}:`,
+      `Edit jumlah untuk ${CATEGORY_MAP[entri.tipe].name}:`,
       entri.jumlah
     );
     if (jumlahBaruStr === null) return; // Batal
@@ -156,11 +200,16 @@ function editEntri(key) {
       .child(key)
       .update({ jumlah: jumlahBaru.toFixed(4) })
       .then(() => {
-        tampilkanNotifikasi(`Berhasil mengedit ${entri.tipe}.`);
+        tampilkanNotifikasi(
+          `Berhasil mengedit ${CATEGORY_MAP[entri.tipe].name}.`
+        );
       })
       .catch((error) => {
         console.error("Gagal mengedit data:", error);
-        tampilkanNotifikasi(`Gagal mengedit ${entri.tipe}.`, true);
+        tampilkanNotifikasi(
+          `Gagal mengedit ${CATEGORY_MAP[entri.tipe].name}.`,
+          true
+        );
       });
   });
 }
@@ -181,9 +230,55 @@ function hapusEntri(key) {
   }
 }
 
+// Fungsi untuk mengunduh data sebagai CSV
+function exportDataAsCsv() {
+  dataRef.once("value", (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      alert("Tidak ada data untuk diunduh.");
+      return;
+    }
+
+    let csvContent = "Tipe,Jumlah\n";
+    Object.values(data).forEach((entri) => {
+      csvContent += `${CATEGORY_MAP[entri.tipe].name},${entri.jumlah}\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `data_penghitung_${tanggal}.csv`);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  });
+}
+
 // Event Listeners
-btnTambahReguler.addEventListener("click", () => tambahEntri("reguler"));
-btnTambahKlik.addEventListener("click", () => tambahEntri("klik"));
+document
+  .getElementById("btn-tambah-reguler-tawar")
+  .addEventListener("click", () => tambahEntri("reguler-tawar"));
+document
+  .getElementById("btn-tambah-mild-tawar")
+  .addEventListener("click", () => tambahEntri("mild-tawar"));
+document
+  .getElementById("btn-tambah-reguler-click")
+  .addEventListener("click", () => tambahEntri("reguler-click"));
+document
+  .getElementById("btn-tambah-mild-click")
+  .addEventListener("click", () => tambahEntri("mild-click"));
+document
+  .getElementById("btn-tambah-esse-click")
+  .addEventListener("click", () => tambahEntri("esse-click"));
+document
+  .getElementById("btn-tambah-bolong-buntu")
+  .addEventListener("click", () => tambahEntri("bolong-buntu"));
+
+btnDownload.addEventListener("click", exportDataAsCsv);
 
 daftarEntriEl.addEventListener("click", (e) => {
   const key = e.target.dataset.key;
