@@ -23,6 +23,8 @@ const dataRef = database.ref(`data/${tanggal}`);
 
 // Kategori baru dan urutannya
 const CATEGORIES = [
+  "reguler",
+  "klik",
   "reguler-tawar",
   "mild-tawar",
   "reguler-click",
@@ -31,6 +33,8 @@ const CATEGORIES = [
   "bolong-buntu",
 ];
 const CATEGORY_MAP = {
+  reguler: { name: "REGULER", color: "primary" },
+  klik: { name: "CLICK", color: "success" },
   "reguler-tawar": { name: "REGULER TAWAR", color: "primary" },
   "mild-tawar": { name: "MILD TAWAR", color: "primary" },
   "reguler-click": { name: "REGULER CLICK", color: "success" },
@@ -239,10 +243,30 @@ function exportDataAsCsv() {
       return;
     }
 
-    let csvContent = "Tipe,Jumlah\n";
+    let csvContent = `Data Rinci Tanggal ${tanggal}\n\n`;
+    csvContent += "Kategori,Jumlah\n";
     Object.values(data).forEach((entri) => {
       csvContent += `${CATEGORY_MAP[entri.tipe].name},${entri.jumlah}\n`;
     });
+
+    // Tambahkan ringkasan total
+    const totals = {};
+    CATEGORIES.forEach((cat) => (totals[cat] = 0));
+    let totalKeseluruhan = 0;
+
+    Object.values(data).forEach((entri) => {
+      const jumlah = parseFloat(entri.jumlah);
+      if (totals.hasOwnProperty(entri.tipe)) {
+        totals[entri.tipe] += jumlah;
+      }
+      totalKeseluruhan += jumlah;
+    });
+
+    csvContent += `\nRingkasan Total\n\n`;
+    CATEGORIES.forEach((cat) => {
+      csvContent += `${CATEGORY_MAP[cat].name},${totals[cat].toFixed(4)}\n`;
+    });
+    csvContent += `\nJUMLAH TOTAL,${totalKeseluruhan.toFixed(4)}\n`;
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
@@ -259,6 +283,12 @@ function exportDataAsCsv() {
 }
 
 // Event Listeners
+document
+  .getElementById("btn-tambah-reguler")
+  .addEventListener("click", () => tambahEntri("reguler"));
+document
+  .getElementById("btn-tambah-klik")
+  .addEventListener("click", () => tambahEntri("klik"));
 document
   .getElementById("btn-tambah-reguler-tawar")
   .addEventListener("click", () => tambahEntri("reguler-tawar"));
